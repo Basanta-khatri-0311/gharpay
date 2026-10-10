@@ -7,6 +7,8 @@ import { prisma } from './lib/prisma.js';
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/error-handler.js';
 
+import authRouter from './modules/auth/auth.routes.js';
+
 export const app = express();
 
 app.use(helmet());
@@ -18,7 +20,6 @@ app.use(
 );
 app.use(express.json());
 app.use(morgan('dev'));
-app.use(errorHandler);
 app.get('/health', async (_req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
@@ -34,5 +35,5 @@ app.get('/health', async (_req, res) => {
     });
   }
 });
-
+app.use('/api/auth', authRouter);
 app.use(errorHandler);
