@@ -1,8 +1,9 @@
 import argon2 from 'argon2';
 
 import { prisma } from '../../lib/prisma.js';
-import { AppError } from '../../lib/errors.js';
-import type { RegisterInput } from './auth.schema.js';
+import { AppError, UnauthorizedError } from '../../lib/errors.js';
+import type { RegisterInput, LoginInput } from './auth.schema.js';
+import { createAccessToken } from './token.service.js';
 
 export async function registerUser(input: RegisterInput) {
   const email = input.email.toLowerCase();
@@ -60,4 +61,48 @@ export async function registerUser(input: RegisterInput) {
 
     throw error;
   }
+}
+
+export async function loginUser(input: LoginInput) {
+  const email = input.email.toLowerCase();
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      role: true,
+      passwordHash: true,
+      createdAt: true,
+    },
+  });
+
+  if (!user) {
+    throw new UnauthorizedError('Invalid email or password');
+  }
+
+  const passwordIsValid = await argon2.verify(
+    user.passwordHash,
+    input.password,
+  );
+
+  if (!passwordIsValid) {
+    throw new UnauthorizedError('Invalid email or password');
+  }
+
+  const accessToken = await createAccessToken({
+    id: user.id,
+    role: user.role,
+  });
+
+  const { passwordHash: _passwordHash, ...safeUser } = user;
+
+  return {
+    user: safeUser,
+    accessToken,
+    tokenType: 'Bearer' as const,
+    expiresIn: 900,
+  };
 }
