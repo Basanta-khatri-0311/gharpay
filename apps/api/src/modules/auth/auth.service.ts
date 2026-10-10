@@ -4,6 +4,7 @@ import { prisma } from '../../lib/prisma.js';
 import { AppError, UnauthorizedError } from '../../lib/errors.js';
 import type { RegisterInput, LoginInput } from './auth.schema.js';
 import { createAccessToken } from './token.service.js';
+import { createRefreshToken } from './refresh-token.service.js';
 
 export async function registerUser(input: RegisterInput) {
   const email = input.email.toLowerCase();
@@ -98,10 +99,12 @@ export async function loginUser(input: LoginInput) {
   });
 
   const { passwordHash: _passwordHash, ...safeUser } = user;
+  const refreshToken = await createRefreshToken(user.id);
 
   return {
     user: safeUser,
     accessToken,
+    refreshToken,
     tokenType: 'Bearer' as const,
     expiresIn: 900,
   };

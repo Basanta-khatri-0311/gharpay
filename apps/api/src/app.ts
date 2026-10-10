@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 
 import { prisma } from './lib/prisma.js';
 import { env } from './config/env.js';
@@ -19,6 +20,7 @@ app.use(
   }),
 );
 app.use(express.json());
+app.use(cookieParser());
 app.use(morgan('dev'));
 app.get('/health', async (_req, res) => {
   try {
