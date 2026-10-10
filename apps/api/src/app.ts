@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import { prisma } from './lib/prisma.js';
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/error-handler.js';
+import { authenticate, authorize } from './middleware/authenticate.js';
 
 import authRouter from './modules/auth/auth.routes.js';
 
