@@ -10,6 +10,7 @@ import { errorHandler } from './middleware/error-handler.js';
 import { authenticate, authorize } from './middleware/authenticate.js';
 
 import authRouter from './modules/auth/auth.routes.js';
+import propertyRoutes from './modules/properties/property.routes.js';
 
 export const app = express();
 
@@ -39,4 +40,5 @@ app.get('/health', async (_req, res) => {
   }
 });
 app.use('/api/auth', authRouter);
+app.use('/api/properties', propertyRoutes);
 app.use(errorHandler);
