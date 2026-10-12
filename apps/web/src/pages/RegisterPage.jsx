@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext.jsx'
+import { auth } from '../lib/api'
 
 export default function RegisterPage() {
-  const { register } = useAuth()
   const navigate = useNavigate()
 
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'LANDLORD' })
@@ -17,7 +16,7 @@ export default function RegisterPage() {
     setError(null)
     setLoading(true)
     try {
-      await register(form)
+      await auth.register(form)
       // After registering, send user to login
       navigate('/login', { state: { registered: true } })
     } catch (err) {

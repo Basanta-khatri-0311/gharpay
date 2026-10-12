@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from './context/AuthContext'
+import LoadingScreen from './components/LoadingScreen'
 import LandingPage from './pages/LandingPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
@@ -6,6 +8,11 @@ import DashboardPage from './pages/DashboardPage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 export default function App() {
+  const { isLoading } = useAuth()
+
+  // Show full-screen loader until we know the auth state
+  if (isLoading) return <LoadingScreen />
+
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />

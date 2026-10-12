@@ -21,7 +21,7 @@ async function tryRefresh() {
 
   _refreshPromise = fetch('/api/auth/refresh', {
     method: 'POST',
-    credentials: 'include', // send httpOnly cookie
+    credentials: 'include', 
   })
     .then(async (res) => {
       if (!res.ok) throw new Error('Refresh failed');
@@ -92,8 +92,22 @@ export const auth = {
   login: (body) =>
     apiFetch('/api/auth/login', { method: 'POST', body: JSON.stringify(body) }).then(parseResponse),
 
-  refresh: () =>
-    apiFetch('/api/auth/refresh', { method: 'POST' }).then(parseResponse),
+  // Uses raw fetch — NOT apiFetch — to avoid the 401→retry→refresh loop
+  refresh: async () => {
+    const res = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new ApiError(res.status, json.error?.code ?? 'REFRESH_FAILED', json.error?.message ?? 'Refresh failed');
+    }
+    if (json.data?.accessToken) {
+      setAccessToken(json.data.accessToken);
+    }
+    return json.data;
+  },
 
   logout: () =>
     apiFetch('/api/auth/logout', { method: 'POST' }).then(parseResponse),
