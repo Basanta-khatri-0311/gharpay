@@ -15,6 +15,7 @@ import propertyRoutes from './modules/properties/property.routes.js';
 import tenancyRoutes from './modules/tenancies/tenancy.routes.js';
 import billRoutes from './modules/bills/bill.routes.js';
 import paymentRoutes from './modules/payments/payment.routes.js';
+import paymentMethodRoutes from './modules/payment-methods/payment-method.routes.js';
 
 export const app = express();
 
@@ -49,4 +50,5 @@ app.use('/api/properties/:propertyId/units', unitRoutes);
 app.use('/api/tenancies', tenancyRoutes);
 app.use('/api/bills', billRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/payment-methods', paymentMethodRoutes);
 app.use(errorHandler);
