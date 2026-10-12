@@ -16,6 +16,7 @@ import tenancyRoutes from './modules/tenancies/tenancy.routes.js';
 import billRoutes from './modules/bills/bill.routes.js';
 import paymentRoutes from './modules/payments/payment.routes.js';
 import paymentMethodRoutes from './modules/payment-methods/payment-method.routes.js';
+import invitationRoutes from './modules/invitations/invitation.routes.js';
 
 export const app = express();
 
@@ -51,4 +52,5 @@ app.use('/api/tenancies', tenancyRoutes);
 app.use('/api/bills', billRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/payment-methods', paymentMethodRoutes);
+app.use('/api/invitations', invitationRoutes);
 app.use(errorHandler);
