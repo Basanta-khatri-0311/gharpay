@@ -12,6 +12,7 @@ import { authenticate, authorize } from './middleware/authenticate.js';
 import authRouter from './modules/auth/auth.routes.js';
 import unitRoutes from './modules/units/unit.routes.js';
 import propertyRoutes from './modules/properties/property.routes.js';
+import tenancyRoutes from './modules/tenancies/tenancy.routes.js';
 
 export const app = express();
 
@@ -43,4 +44,5 @@ app.get('/health', async (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/properties', propertyRoutes);
 app.use('/api/properties/:propertyId/units', unitRoutes);
+app.use('/api/tenancies', tenancyRoutes);
 app.use(errorHandler);
