@@ -355,7 +355,7 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout activeKey="overview">
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-5 p-4 md:p-8">
 
         {/* Error banner */}
         {error && (
@@ -365,12 +365,12 @@ export default function DashboardPage() {
         )}
 
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:justify-between">
           <div>
             <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-accent mb-2">
               {formatDate()}
             </p>
-            <h1 className="text-[28px] font-bold tracking-tight leading-tight">
+            <h1 className="text-2xl md:text-[28px] font-bold tracking-tight leading-tight">
               {getGreeting()}, {user?.name ?? 'there'}
             </h1>
             <p className="text-sm text-text-secondary mt-1">
@@ -379,7 +379,7 @@ export default function DashboardPage() {
           </div>
           <Link
             to="/dashboard/bills"
-            className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-primary-hover transition-colors"
+            className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-md text-sm font-medium hover:bg-primary-hover transition-colors self-start shrink-0"
           >
             <Plus size={14} strokeWidth={2.5} />
             Create bill

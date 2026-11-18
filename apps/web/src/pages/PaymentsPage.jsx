@@ -136,11 +136,11 @@ function PaymentDetail({ payment, onBack }) {
         <ArrowLeft size={16} /> Back to payments
       </button>
 
-      <div className="flex gap-4 items-start">
+      <div className="flex flex-col lg:flex-row gap-4 items-start">
         {/* Left — Payment info card */}
         <div className="flex-1 bg-surface border border-border rounded-2xl p-6">
           {/* Header */}
-          <div className="flex items-start justify-between mb-5">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-5">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-semibold text-base flex-shrink-0">
                 {initials(renter?.name)}
@@ -160,7 +160,7 @@ function PaymentDetail({ payment, onBack }) {
           <div className="border-t border-border my-4" />
 
           {/* Grid info */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm mb-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm mb-5">
             <div>
               <p className="text-text-muted mb-0.5">Billing period</p>
               <p className="font-medium text-text">{formatMonth(payment.bill?.billingMonth)}</p>
@@ -221,7 +221,7 @@ function PaymentDetail({ payment, onBack }) {
         </div>
 
         {/* Right — Review panel */}
-        <div className="w-72 flex-shrink-0 bg-surface border border-border rounded-2xl p-5">
+        <div className="w-full lg:w-72 lg:flex-shrink-0 bg-surface border border-border rounded-2xl p-5">
           <h3 className="font-semibold text-text mb-1">Review payment</h3>
           <p className="text-xs text-text-muted mb-5">
             Confirm that NPR {Number(payment.amount).toLocaleString('en-IN')} has arrived in your account and the reference matches.
@@ -346,7 +346,7 @@ export default function PaymentsPage() {
 
   return (
     <DashboardLayout activeKey="payments">
-      <div className="p-8 max-w-6xl mx-auto">
+      <div className="p-4 md:p-8 max-w-6xl mx-auto">
         {/* Page header */}
         <div className="mb-6">
           {pendingCount > 0 && (

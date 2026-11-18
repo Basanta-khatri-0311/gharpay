@@ -3,37 +3,66 @@ import { useEffect, useRef, useState } from 'react'
 
 /* ─── Navbar ─────────────────────────────────────────────────────────────── */
 function Navbar() {
+  const [menuOpen, setMenuOpen] = useState(false)
+
   const handleNav = (e, id) => {
     e.preventDefault()
+    setMenuOpen(false)
     const el = document.getElementById(id)
     if (!el) return
-    const offset = 72 // sticky nav height
+    const offset = 72
     const top = el.getBoundingClientRect().top + window.scrollY - offset
     window.scrollTo({ top, behavior: 'smooth' })
   }
 
   return (
     <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-border">
-      <div className="max-w-[1200px] mx-auto px-6 flex items-center h-[64px]">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-6 flex items-center h-[64px]">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0 mr-12">
+        <Link to="/" className="flex items-center gap-2 shrink-0 mr-auto md:mr-12">
           <span className="w-8 h-8 bg-primary text-white rounded-md flex items-center justify-center text-sm font-bold">G</span>
           <span className="text-[15px] font-semibold text-text">GharPay</span>
         </Link>
 
-        {/* Center nav links */}
+        {/* Center nav links — desktop */}
         <div className="hidden md:flex items-center gap-8 flex-1 justify-center">
           <a href="#how-it-works" onClick={(e) => handleNav(e, 'how-it-works')} className="text-[14px] text-text-secondary hover:text-text transition-colors">How it works</a>
           <a href="#landlords"    onClick={(e) => handleNav(e, 'landlords')}    className="text-[14px] text-text-secondary hover:text-text transition-colors">For landlords</a>
           <a href="#renters"      onClick={(e) => handleNav(e, 'renters')}      className="text-[14px] text-text-secondary hover:text-text transition-colors">For renters</a>
         </div>
 
-        {/* Right actions */}
-        <div className="flex items-center gap-3 ml-auto">
+        {/* Right actions — desktop */}
+        <div className="hidden md:flex items-center gap-3 ml-auto">
           <Link to="/login"    className="text-[14px] font-medium text-text-secondary hover:text-text transition-colors px-3 py-2">Sign in</Link>
           <Link to="/register" className="text-[14px] font-semibold bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-primary-hover transition-colors leading-none">Get started</Link>
         </div>
+
+        {/* Hamburger — mobile */}
+        <button
+          className="md:hidden p-2 rounded-md text-text-secondary hover:bg-surface transition-colors"
+          onClick={() => setMenuOpen(o => !o)}
+          aria-label="Toggle menu"
+        >
+          {menuOpen ? (
+            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          ) : (
+            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          )}
+        </button>
       </div>
+
+      {/* Mobile dropdown */}
+      {menuOpen && (
+        <div className="md:hidden bg-white border-t border-border px-4 py-4 flex flex-col gap-3">
+          <a href="#how-it-works" onClick={(e) => handleNav(e, 'how-it-works')} className="text-[15px] text-text-secondary py-2">How it works</a>
+          <a href="#landlords"    onClick={(e) => handleNav(e, 'landlords')}    className="text-[15px] text-text-secondary py-2">For landlords</a>
+          <a href="#renters"      onClick={(e) => handleNav(e, 'renters')}      className="text-[15px] text-text-secondary py-2">For renters</a>
+          <div className="pt-3 border-t border-border flex flex-col gap-2">
+            <Link to="/login"    className="text-[14px] font-medium text-text-secondary text-center border border-border rounded-lg py-2.5">Sign in</Link>
+            <Link to="/register" className="text-[14px] font-semibold bg-primary text-white text-center rounded-lg py-2.5 hover:bg-primary-hover transition-colors">Get started</Link>
+          </div>
+        </div>
+      )}
     </nav>
   )
 }
@@ -41,20 +70,20 @@ function Navbar() {
 /* ─── Hero ───────────────────────────────────────────────────────────────── */
 function Hero() {
   return (
-    <section className="py-20 lg:py-24">
-      <div className="max-w-[1200px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+    <section className="py-14 lg:py-24">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
         <div className="flex flex-col gap-5">
           <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-accent">Rental management, made for Nepal</p>
-          <h1 className="text-4xl lg:text-[52px] font-medium leading-[1.08] tracking-tight text-text">
+          <h1 className="text-3xl md:text-4xl lg:text-[52px] font-medium leading-[1.08] tracking-tight text-text">
             Rent, bills, and<br />payments. All in<br />one place.
           </h1>
           <p className="text-base text-text-secondary max-w-[400px] leading-relaxed">
             Manage rent and household bills without spreadsheets,
             screenshots, or forgotten payments.
           </p>
-          <div className="flex items-center gap-3 mt-2">
-            <Link to="/register" className="inline-flex items-center gap-2 bg-primary text-white px-7 py-3.5 rounded-md text-[15px] font-medium hover:bg-primary-hover transition-colors">Get started</Link>
-            <a href="#how-it-works" className="inline-flex items-center gap-1 text-text-secondary px-5 py-3.5 text-[15px] hover:text-text transition-colors">
+          <div className="flex flex-wrap items-center gap-3 mt-2">
+            <Link to="/register" className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3.5 rounded-md text-[15px] font-medium hover:bg-primary-hover transition-colors">Get started</Link>
+            <a href="#how-it-works" className="inline-flex items-center gap-1 text-text-secondary px-4 py-3.5 text-[15px] hover:text-text transition-colors">
               See how it works <span>›</span>
             </a>
           </div>
@@ -126,8 +155,8 @@ const features = [
 
 function Features() {
   return (
-    <section className="py-20 bg-surface">
-      <div className="max-w-[1200px] mx-auto px-6">
+    <section className="py-16 md:py-20 bg-surface">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-6">
         <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-accent">Built for clarity</p>
         <h2 className="text-3xl lg:text-4xl font-bold leading-tight tracking-tight mt-4 max-w-[520px]">Everything you need to manage rent</h2>
         <p className="text-[15px] text-text-secondary mt-2 mb-8">One dependable record for every charge, payment, and receipt.</p>
@@ -191,8 +220,18 @@ function Steps() {
   }, [])
 
   return (
-    <section className="py-24 bg-bg" id="how-it-works" ref={sectionRef}>
-      <div className="max-w-[1200px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+    <section className="py-16 md:py-24 bg-bg" id="how-it-works" ref={sectionRef}>
+      <div className="max-w-[1200px] mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center">
+
+        {/* On mobile: heading first, then card */}
+        <div className="lg:hidden">
+          <h2 className="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">
+            From property to paid<br />in five steps
+          </h2>
+          <p className="text-[15px] text-text-secondary mt-3 leading-relaxed">
+            A repeatable rhythm every month — no chasing messages, no lost screenshots.
+          </p>
+        </div>
 
         {/* Left — animated stepper card */}
         <div
@@ -266,8 +305,8 @@ function Steps() {
           </div>
         </div>
 
-        {/* Right — heading */}
-        <div>
+        {/* Right — heading (desktop only) */}
+        <div className="hidden lg:block">
           <h2 className="text-3xl lg:text-4xl font-semibold leading-tight tracking-tight text-right">
             From property to paid<br />in five steps
           </h2>
@@ -284,8 +323,8 @@ function Steps() {
 /* ─── Roles ──────────────────────────────────────────────────────────────── */
 function Roles() {
   return (
-    <section className="py-20 bg-surface">
-      <div className="max-w-[1200px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-16 items-stretch">
+    <section className="py-16 md:py-20 bg-surface">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-10 lg:gap-16 items-stretch">
         <div className="flex flex-col gap-4" id="landlords">
           <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-accent">For landlords</p>
           <h2 className="text-3xl lg:text-4xl font-medium leading-tight tracking-tight">Know exactly what has been paid.</h2>
@@ -332,7 +371,7 @@ function Roles() {
 function Footer() {
   return (
     <footer className="bg-bg-dark py-8">
-      <div className="max-w-[1200px] mx-auto px-6 flex items-center gap-6">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <div className="flex items-center gap-2 shrink-0">
           <span className="w-8 h-8 bg-white/15 text-white rounded-md flex items-center justify-center text-sm font-bold">G</span>
           <span className="text-[15px] font-semibold text-white">GharPay</span>

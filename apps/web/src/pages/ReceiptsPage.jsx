@@ -79,7 +79,7 @@ function ReceiptDocument({ payment }) {
       <div className="border-t border-gray-100 mx-8" />
 
       {/* Parties */}
-      <div className="mx-8 my-5 grid grid-cols-2 gap-6">
+      <div className="mx-8 my-5 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         <div>
           <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Tenant</p>
           <p className="font-semibold text-gray-800">{renter?.name || '—'}</p>
@@ -156,6 +156,7 @@ function ReceiptList({ paymentsWithReceipt, onSelect }) {
         </div>
       ) : (
         <div className="bg-surface border border-border rounded-2xl overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
@@ -198,6 +199,7 @@ function ReceiptList({ paymentsWithReceipt, onSelect }) {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>
@@ -220,34 +222,31 @@ function ReceiptDetailView({ payment, onBack }) {
 
   return (
     <div>
-      {/* Header */}
-      <div className="mb-6">
-        <p className="text-xs font-semibold tracking-widest text-primary uppercase mb-1">
-          Receipt #{receipt?.receiptNumber || receipt?.id?.slice(0, 12)}
-        </p>
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-text">Payment receipt</h1>
-            <p className="text-text-muted mt-1">A verified record for tenant and property owner.</p>
+          <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:justify-between mb-6">
+            <div>
+              <p className="text-xs font-semibold tracking-widest text-primary uppercase mb-1">
+                Receipt #{receipt?.receiptNumber || receipt?.id?.slice(0, 12)}
+              </p>
+              <h1 className="text-2xl md:text-3xl font-bold text-text">Payment receipt</h1>
+              <p className="text-text-muted mt-1">A verified record for tenant and property owner.</p>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2 border border-border bg-surface hover:bg-bg rounded-xl px-4 py-2.5 text-sm font-medium text-text transition-colors"
+              >
+                <Share2 size={15} />
+                {copied ? 'Copied!' : 'Share receipt'}
+              </button>
+              <button
+                onClick={handlePrint}
+                className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
+              >
+                <Download size={15} />
+                Download PDF
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleShare}
-              className="flex items-center gap-2 border border-border bg-surface hover:bg-bg rounded-xl px-4 py-2.5 text-sm font-medium text-text transition-colors"
-            >
-              <Share2 size={15} />
-              {copied ? 'Copied!' : 'Share receipt'}
-            </button>
-            <button
-              onClick={handlePrint}
-              className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
-            >
-              <Download size={15} />
-              Download PDF
-            </button>
-          </div>
-        </div>
-      </div>
 
       <button
         onClick={onBack}
@@ -284,7 +283,7 @@ export default function ReceiptsPage() {
 
   return (
     <DashboardLayout activeKey="receipts">
-      <div className="p-8 max-w-5xl mx-auto">
+      <div className="p-4 md:p-8 max-w-5xl mx-auto">
         {isLoading && (
           <div className="flex items-center gap-2 text-text-muted">
             <Loader2 size={18} className="animate-spin" /> Loading receipts…

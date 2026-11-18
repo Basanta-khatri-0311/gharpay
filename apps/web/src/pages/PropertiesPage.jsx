@@ -258,7 +258,7 @@ export default function PropertiesPage() {
 
   return (
     <DashboardLayout activeKey="properties">
-      <div className="flex flex-col gap-5 h-full">
+      <div className="flex flex-col gap-5 h-full p-4 md:p-6">
 
         {/* ── Page Header ── */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">

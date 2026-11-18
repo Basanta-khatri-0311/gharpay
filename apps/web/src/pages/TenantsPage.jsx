@@ -219,7 +219,8 @@ export default function TenantsPage() {
 
   return (
     <DashboardLayout activeKey="tenants">
-      <div className="flex flex-col gap-6 max-w-3xl">
+
+      <div className="flex flex-col gap-6 max-w-3xl p-4 md:p-8">
         {/* Header */}
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">People</p>

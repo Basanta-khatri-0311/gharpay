@@ -195,8 +195,8 @@ export default function BillsPage() {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <DashboardLayout>
-      <div className="max-w-6xl mx-auto px-6 py-8">
+    <DashboardLayout activeKey="bills">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-5 md:py-8">
         {/* Header */}
         <div className="mb-6">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-accent mb-1">Billing</p>
@@ -225,7 +225,7 @@ export default function BillsPage() {
 
         {/* ── CREATE TAB ── */}
         {activeTab === 'create' && (
-          <div className="flex gap-6 items-start">
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Left — form */}
             <div className="flex-1 min-w-0">
               <div className="bg-surface border border-border rounded-2xl p-6">
@@ -320,7 +320,7 @@ export default function BillsPage() {
                     </div>
 
                     {/* Table header */}
-                    <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-3 pb-2 border-b border-border">
+                    <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-3 px-3 pb-2 border-b border-border">
                       <span className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">Description</span>
                       <span className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">Type</span>
                       <span className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">Amount</span>
@@ -332,7 +332,7 @@ export default function BillsPage() {
                       {charges.map((charge) => (
                         <div
                           key={charge.id}
-                          className="grid grid-cols-[1fr_auto_auto_auto] gap-3 items-center py-2.5 px-3"
+                          className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-2 sm:gap-3 items-center py-2.5 px-3"
                         >
                           <input
                             type="text"
