@@ -7,12 +7,25 @@ import { createTenancySchema } from './tenancy.schema.js';
 import {
   createTenancy,
   listTenancies,
+  listMyTenancies,
   getTenancy,
   endTenancy,
 } from './tenancy.service.js';
 
 const router = Router();
 
+// ── Renter route (accessible by RENTER role) ─────────────────────────────────
+// GET /api/tenancies/mine  — returns the calling renter's own tenancies
+router.get('/mine', authenticate, authorize('RENTER'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const tenancies = await listMyTenancies(req.user!.id);
+    res.status(200).json({ success: true, data: { tenancies } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ── All routes below require LANDLORD ────────────────────────────────────────
 router.use(authenticate, authorize('LANDLORD'));
 
 // POST /api/tenancies

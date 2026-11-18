@@ -3,6 +3,15 @@ import { useEffect, useRef, useState } from 'react'
 import { useTheme } from '../context/ThemeContext.jsx'
 import { Sun, Moon } from 'lucide-react'
 
+/* ─── Shared smooth-scroll helper ───────────────────────────────────────── */
+function scrollToSection(id) {
+  const el = document.getElementById(id)
+  if (!el) return
+  const offset = 72
+  const top = el.getBoundingClientRect().top + window.scrollY - offset
+  window.scrollTo({ top, behavior: 'smooth' })
+}
+
 /* ─── Navbar ─────────────────────────────────────────────────────────────── */
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -11,15 +20,11 @@ function Navbar() {
   const handleNav = (e, id) => {
     e.preventDefault()
     setMenuOpen(false)
-    const el = document.getElementById(id)
-    if (!el) return
-    const offset = 72
-    const top = el.getBoundingClientRect().top + window.scrollY - offset
-    window.scrollTo({ top, behavior: 'smooth' })
+    scrollToSection(id)
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-border">
+    <nav className="sticky top-0 z-50 bg-bg/90 backdrop-blur-md border-b border-border">
       <div className="max-w-[1200px] mx-auto px-4 md:px-6 flex items-center h-[64px]">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 shrink-0 mr-auto md:mr-12">
@@ -72,7 +77,7 @@ function Navbar() {
 
       {/* Mobile dropdown */}
       {menuOpen && (
-        <div className="md:hidden bg-white border-t border-border px-4 py-4 flex flex-col gap-3">
+        <div className="md:hidden bg-bg border-t border-border px-4 py-4 flex flex-col gap-3">
           <a href="#how-it-works" onClick={(e) => handleNav(e, 'how-it-works')} className="text-[15px] text-text-secondary py-2">How it works</a>
           <a href="#landlords"    onClick={(e) => handleNav(e, 'landlords')}    className="text-[15px] text-text-secondary py-2">For landlords</a>
           <a href="#renters"      onClick={(e) => handleNav(e, 'renters')}      className="text-[15px] text-text-secondary py-2">For renters</a>
@@ -102,7 +107,11 @@ function Hero() {
           </p>
           <div className="flex flex-wrap items-center gap-3 mt-2">
             <Link to="/register" className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3.5 rounded-md text-[15px] font-medium hover:bg-primary-hover transition-colors">Get started</Link>
-            <a href="#how-it-works" className="inline-flex items-center gap-1 text-text-secondary px-4 py-3.5 text-[15px] hover:text-text transition-colors">
+            <a
+              href="#how-it-works"
+              onClick={(e) => { e.preventDefault(); scrollToSection('how-it-works') }}
+              className="inline-flex items-center gap-1 text-text-secondary px-4 py-3.5 text-[15px] hover:text-text transition-colors"
+            >
               See how it works <span>›</span>
             </a>
           </div>
@@ -254,8 +263,7 @@ function Steps() {
 
         {/* Left — animated stepper card */}
         <div
-          className="rounded-2xl p-8 border border-[#c8ddd2]"
-          style={{ background: 'linear-gradient(135deg, #f4f8f5 0%, #eaf2ed 100%)' }}
+          className="rounded-2xl p-8 border border-border bg-surface"
         >
           <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-accent mb-6">
             A simple monthly rhythm
@@ -270,7 +278,7 @@ function Steps() {
                   className={`w-8 h-8 rounded-full text-[13px] font-semibold flex items-center justify-center shrink-0 z-10 transition-all duration-500 ${
                     i <= active
                       ? 'bg-primary text-white shadow-md scale-110'
-                      : 'bg-white text-text-muted border-2 border-border-dark'
+                      : 'bg-surface text-text-muted border-2 border-border'
                   }`}
                 >
                   {i <= active ? (
@@ -302,7 +310,7 @@ function Steps() {
                 key={i}
                 className={`flex items-start gap-3 px-4 py-3 rounded-xl transition-all duration-500 ${
                   i === active
-                    ? 'bg-white border border-[#c8ddd2] shadow-sm'
+                    ? 'bg-bg border border-border shadow-sm'
                     : i < active
                     ? 'opacity-50'
                     : 'opacity-30'
@@ -340,47 +348,51 @@ function Steps() {
 }
 
 /* ─── Roles ──────────────────────────────────────────────────────────────── */
+function RoleCard({ id, label, heading, desc, items, cta }) {
+  return (
+    <div className="flex flex-col" id={id}>
+      <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-accent mb-3">{label}</p>
+      <h2 className="text-3xl lg:text-4xl font-medium leading-tight tracking-tight mb-3">{heading}</h2>
+      <p className="text-sm text-text-secondary leading-relaxed max-w-[360px] mb-4">{desc}</p>
+      {/* flex-1 spacer pushes button to the same bottom position in both columns */}
+      <ul className="flex flex-col gap-2 flex-1">
+        {items.map((item) => (
+          <li key={item} className="text-sm text-text-secondary flex items-center gap-2">
+            <span className="text-accent font-semibold text-[13px]">✓</span> {item}
+          </li>
+        ))}
+      </ul>
+      <Link
+        to="/register"
+        className="self-start mt-8 border-[1.5px] border-border-dark text-text px-5 py-2.5 rounded-md text-[13px] font-medium hover:bg-surface-muted hover:border-text-secondary transition-all"
+      >
+        {cta}
+      </Link>
+    </div>
+  )
+}
+
 function Roles() {
   return (
     <section className="py-16 md:py-20 bg-surface">
       <div className="max-w-[1200px] mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-10 lg:gap-16 items-stretch">
-        <div className="flex flex-col gap-4" id="landlords">
-          <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-accent">For landlords</p>
-          <h2 className="text-3xl lg:text-4xl font-medium leading-tight tracking-tight">Know exactly what has been paid.</h2>
-          <p className="text-sm text-text-secondary leading-relaxed max-w-[360px]">
-            Manage one room or fifty units with a consistent billing and verification process.
-          </p>
-          <ul className="flex flex-col gap-2">
-            {['Property and tenant records', 'Recurring utility charges', 'Pending and overdue tracking'].map((item) => (
-              <li key={item} className="text-sm text-text-secondary flex items-center gap-2">
-                <span className="text-accent font-semibold text-[13px]">✓</span> {item}
-              </li>
-            ))}
-          </ul>
-          <Link to="/register" className="self-start mt-auto pt-6 border-[1.5px] border-border-dark text-text px-4 py-2 rounded-md text-[13px] font-medium hover:bg-surface-muted hover:border-text-secondary transition-all">
-            Explore landlord view
-          </Link>
-        </div>
-
+        <RoleCard
+          id="landlords"
+          label="For landlords"
+          heading="Know exactly what has been paid."
+          desc="Manage one room or fifty units with a consistent billing and verification process."
+          items={['Property and tenant records', 'Recurring utility charges', 'Pending and overdue tracking']}
+          cta="Explore landlord view"
+        />
         <div className="hidden lg:block w-px bg-border self-stretch" />
-
-        <div className="flex flex-col gap-4" id="renters">
-          <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-accent">For renters</p>
-          <h2 className="text-3xl lg:text-4xl font-medium leading-tight tracking-tight">Understand every rupee you owe.</h2>
-          <p className="text-sm text-text-secondary leading-relaxed max-w-[360px]">
-            See a full bill breakdown, pay through familiar methods, and keep verified receipts.
-          </p>
-          <ul className="flex flex-col gap-2">
-            {['Clear bill breakdowns', 'eSewa, Fonepay, or bank transfer', 'Receipts available anytime'].map((item) => (
-              <li key={item} className="text-sm text-text-secondary flex items-center gap-2">
-                <span className="text-accent font-semibold text-[13px]">✓</span> {item}
-              </li>
-            ))}
-          </ul>
-          <Link to="/register" className="self-start mt-auto pt-6 border-[1.5px] border-border-dark text-text px-4 py-2 rounded-md text-[13px] font-medium hover:bg-surface-muted hover:border-text-secondary transition-all">
-            Explore renter view
-          </Link>
-        </div>
+        <RoleCard
+          id="renters"
+          label="For renters"
+          heading="Understand every rupee you owe."
+          desc="See a full bill breakdown, pay through familiar methods, and keep verified receipts."
+          items={['Clear bill breakdowns', 'eSewa, Fonepay, or bank transfer', 'Receipts available anytime']}
+          cta="Explore renter view"
+        />
       </div>
     </section>
   )

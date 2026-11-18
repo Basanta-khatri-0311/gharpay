@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronRight, X, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { ChevronRight, X, AlertCircle, CheckCircle2, Key, Loader2 } from 'lucide-react'
 import RenterLayout from './RenterLayout.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
-import { bills, payments } from '../../lib/api.js'
+import { bills, payments, invitations, tenancies } from '../../lib/api.js'
 
 function fmtNPR(v) {
   if (!v && v !== 0) return 'NPR —'
@@ -162,6 +162,22 @@ export default function RenterDashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [payBill, setPayBill] = useState(null)
+  const [token, setToken] = useState('')
+  const [acceptError, setAcceptError] = useState(null)
+  const [acceptSuccess, setAcceptSuccess] = useState(false)
+  const queryClient = useQueryClient()
+
+  const acceptMutation = useMutation({
+    mutationFn: () => invitations.accept(token.trim()),
+    onSuccess: () => {
+      setAcceptSuccess(true)
+      setToken('')
+      setAcceptError(null)
+      queryClient.invalidateQueries({ queryKey: ['renter-bills'] })
+      queryClient.invalidateQueries({ queryKey: ['renter-tenancy'] })
+    },
+    onError: (e) => setAcceptError(e.message || 'Invalid or expired token. Please check and try again.'),
+  })
 
   const { data: billList } = useQuery({
     queryKey: ['renter-bills'],
@@ -170,6 +186,16 @@ export default function RenterDashboard() {
       return Array.isArray(r) ? r : (r?.bills ?? [])
     },
   })
+
+  const { data: tenancyList } = useQuery({
+    queryKey: ['renter-tenancy'],
+    queryFn: async () => {
+      const r = await tenancies.mine()
+      return Array.isArray(r) ? r : (r?.tenancies ?? [])
+    },
+  })
+
+  const hasActiveTenancy = tenancyList?.some(t => t.active === true)
 
   const { data: paymentList } = useQuery({
     queryKey: ['renter-payments'],
@@ -201,24 +227,20 @@ export default function RenterDashboard() {
   return (
     <RenterLayout>
       <div className="max-w-sm mx-auto w-full px-4 pt-6 pb-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <span className="w-8 h-8 bg-primary text-white rounded-md flex items-center justify-center text-sm font-bold">G</span>
-            <span className="text-[15px] font-bold text-text">GharPay</span>
-          </div>
-          <div className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold">
-            {user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-          </div>
-        </div>
+
 
         {/* Greeting */}
         <p className="text-sm text-text-muted">{greeting}, {firstName}</p>
         <h1 className="text-[22px] font-bold text-text mt-0.5 mb-5">
-          {currentBill
-            ? `Your ${fmtMonth(currentBill.billingPeriodStart)} bill is due soon.`
-            : ''}
-          {!currentBill && billList !== undefined && 'You\'re all caught up! 🎉'}
+          {tenancyList !== undefined && !hasActiveTenancy && !acceptSuccess
+            ? "Welcome to GharPay! Let's get you set up."
+            : acceptSuccess
+              ? "You're all set! Bills will appear here soon."
+              : currentBill
+                ? `Your ${fmtMonth(currentBill.billingPeriodStart)} bill is due soon.`
+                : billList !== undefined
+                  ? "You're all caught up! "
+                  : ''}
         </h1>
 
         {/* Current bill card */}
@@ -309,8 +331,67 @@ export default function RenterDashboard() {
           </div>
         )}
 
-        {/* Empty state */}
-        {billList !== undefined && billList.length === 0 && (
+        {/* Invite card — shown when no active tenancy yet */}
+        {tenancyList !== undefined && !hasActiveTenancy && !acceptSuccess && (
+          <div className="bg-surface border border-border rounded-2xl overflow-hidden mb-4">
+            {/* Header */}
+            <div className="bg-primary px-5 py-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Key size={16} className="text-white/70" />
+                <span className="text-xs font-semibold uppercase tracking-widest text-white/70">Step 1 of 2</span>
+              </div>
+              <h3 className="text-lg font-bold text-white">Accept your invitation</h3>
+              <p className="text-sm text-white/70 mt-0.5">Paste the token your landlord shared to link your rental unit.</p>
+            </div>
+            {/* Form */}
+            <div className="p-5 flex flex-col gap-4">
+              {acceptError && (
+                <div className="flex items-start gap-2 text-sm text-danger bg-danger-bg border border-danger/20 rounded-lg px-3 py-2.5">
+                  <AlertCircle size={15} className="shrink-0 mt-0.5" />
+                  <span>{acceptError}</span>
+                </div>
+              )}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-text-secondary">Invitation token</label>
+                <textarea
+                  rows={3}
+                  value={token}
+                  onChange={e => setToken(e.target.value)}
+                  placeholder="Paste your invitation token here…"
+                  className="w-full px-3.5 py-2.5 border border-border rounded-lg text-sm text-text bg-bg outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 font-mono placeholder:text-text-muted resize-none"
+                />
+              </div>
+              <button
+                onClick={() => { setAcceptError(null); acceptMutation.mutate() }}
+                disabled={acceptMutation.isPending || !token.trim()}
+                className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl text-sm font-semibold hover:bg-accent transition-colors disabled:opacity-60"
+              >
+                {acceptMutation.isPending
+                  ? <><Loader2 size={15} className="animate-spin" /> Accepting…</>
+                  : 'Accept invitation'}
+              </button>
+              <p className="text-xs text-text-muted text-center">
+                Don't have a token? Ask your landlord to send you an invitation from their Tenants page.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Success state after accepting */}
+        {acceptSuccess && (
+          <div className="bg-surface border border-border rounded-2xl p-6 flex flex-col items-center gap-3 text-center mb-4">
+            <div className="w-14 h-14 rounded-full bg-success-bg flex items-center justify-center">
+              <CheckCircle2 size={28} className="text-success" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-text">You're all set! 🎉</h3>
+              <p className="text-sm text-text-muted mt-1">Your tenancy has been activated. Bills will appear here once your landlord sends them.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Tenancy active but no bills yet */}
+        {hasActiveTenancy && billList !== undefined && billList.length === 0 && (
           <div className="bg-surface border border-border rounded-2xl p-8 text-center">
             <p className="text-text-muted text-sm">No bills yet. Your landlord will send your first bill soon.</p>
           </div>

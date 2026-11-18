@@ -165,6 +165,10 @@ export const tenancies = {
 
   end: (id) =>
     apiFetch(`/api/tenancies/${id}/end`, { method: 'PATCH' }).then(parseResponse),
+
+  // Renter: fetch their own tenancies
+  mine: () =>
+    apiFetch('/api/tenancies/mine').then(parseResponse),
 };
 
 /* ─── Bills ────────────────────────────────────────────────────────────────── */

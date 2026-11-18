@@ -112,6 +112,28 @@ export async function listTenancies(landlordId: string, unitId?: string) {
   });
 }
 
+export async function listMyTenancies(renterId: string) {
+  return prisma.tenancy.findMany({
+    where: { renterId },
+    select: {
+      id: true,
+      startDate: true,
+      endDate: true,
+      active: true,
+      createdAt: true,
+      unit: {
+        select: {
+          id: true,
+          name: true,
+          monthlyRent: true,
+          property: { select: { id: true, name: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
 export async function getTenancy(landlordId: string, tenancyId: string) {
   const tenancy = await prisma.tenancy.findFirst({
     where: {
