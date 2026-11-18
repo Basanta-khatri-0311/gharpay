@@ -249,6 +249,22 @@ export async function acceptInvitation(renterId: string, rawToken: string) {
       select: invitationSelect,
     });
 
+    // Create the tenancy record
+    await tx.tenancy.create({
+      data: {
+        unitId: invitation.unitId,
+        renterId,
+        startDate: new Date(),
+        active: true,
+      },
+    });
+
+    // Mark the unit as occupied
+    await tx.unit.update({
+      where: { id: invitation.unitId },
+      data: { status: 'OCCUPIED' },
+    });
+
     return accepted;
   });
 }

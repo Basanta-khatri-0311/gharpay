@@ -118,6 +118,16 @@ export async function listBills(landlordId: string, tenancyId?: string) {
   });
 }
 
+export async function listRenterBills(renterId: string) {
+  return prisma.bill.findMany({
+    where: {
+      tenancy: { renterId },
+    },
+    select: billSelect,
+    orderBy: { billingMonth: 'desc' },
+  });
+}
+
 export async function getBill(landlordId: string, billId: string) {
   const bill = await prisma.bill.findFirst({
     where: {

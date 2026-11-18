@@ -82,6 +82,10 @@ export default function App() {
         element={<ProtectedRoute allowedRole="RENTER"><RenterReceipt /></ProtectedRoute>}
       />
       <Route
+        path="/renter/receipts"
+        element={<Navigate to="/renter/payments" replace />}
+      />
+      <Route
         path="/renter/profile"
         element={<ProtectedRoute allowedRole="RENTER"><RenterProfile /></ProtectedRoute>}
       />

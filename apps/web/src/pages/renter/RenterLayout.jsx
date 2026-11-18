@@ -25,14 +25,14 @@ function SidebarContent({ location }) {
 
       {/* Nav links */}
       <nav className="flex flex-col gap-0.5 px-3 flex-1">
-        {tabs.map(({ to, label, letter, exact }) => {
+        {tabs.map(({ to, label, letter, exact, linkTo }) => {
           const isActive = exact
             ? location.pathname === to
             : location.pathname.startsWith(to)
           return (
             <Link
               key={to}
-              to={to}
+              to={linkTo ?? to}
               className={`flex items-center gap-3 px-3 py-2 rounded-md text-[13px] transition-all ${
                 isActive
                   ? 'bg-white/10 text-white'
@@ -160,7 +160,7 @@ export default function RenterLayout({ children }) {
       {/* ── Mobile Bottom Nav ─────────────────────────────────────────── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-border z-40">
         <div className="flex">
-          {tabs.map(({ to, label, exact }) => {
+          {tabs.map(({ to, label, exact, linkTo }) => {
             const icons = { '/renter': Home, '/renter/payments': CreditCard, '/renter/receipts': FileText, '/renter/profile': User }
             const Icon = icons[to]
             const isActive = exact
@@ -169,7 +169,7 @@ export default function RenterLayout({ children }) {
             return (
               <Link
                 key={to}
-                to={to}
+                to={linkTo ?? to}
                 className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
                   isActive ? 'text-primary' : 'text-text-muted hover:text-text'
                 }`}

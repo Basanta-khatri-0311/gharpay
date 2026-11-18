@@ -25,11 +25,11 @@ function formatBillStatus(status) {
 }
 
 const DEFAULT_CHARGES = [
-  { id: 1, description: 'Rent', type: 'RECURRING', amount: '', canRemove: false },
-  { id: 2, description: 'Electricity', type: 'VARIABLE', amount: '', canRemove: true },
-  { id: 3, description: 'Water', type: 'RECURRING', amount: '', canRemove: true },
-  { id: 4, description: 'Internet', type: 'RECURRING', amount: '', canRemove: true },
-  { id: 5, description: 'Other', type: 'VARIABLE', amount: '0', canRemove: true },
+  { id: 1, description: 'Rent', type: 'RENT', amount: '', canRemove: false },
+  { id: 2, description: 'Electricity', type: 'ELECTRICITY', amount: '', canRemove: true },
+  { id: 3, description: 'Water', type: 'WATER', amount: '', canRemove: true },
+  { id: 4, description: 'Internet', type: 'INTERNET', amount: '', canRemove: true },
+  { id: 5, description: 'Other', type: 'OTHER', amount: '0', canRemove: true },
 ]
 
 function getBillingMonthOptions() {
@@ -122,7 +122,7 @@ export default function BillsPage() {
   function addCharge() {
     setCharges((prev) => [
       ...prev,
-      { id: nextChargeId, description: '', type: 'VARIABLE', amount: '0', canRemove: true },
+      { id: nextChargeId, description: '', type: 'OTHER', amount: '', canRemove: true },
     ])
     setNextChargeId((n) => n + 1)
   }
@@ -161,17 +161,25 @@ export default function BillsPage() {
 
   function buildPayload(isDraft = false) {
     const [y, m] = billingMonthVal.split('-')
+
+    // Map UI display type to schema enum
+    const typeToEnum = {
+      'Rent': 'RENT',
+      'Electricity': 'ELECTRICITY',
+      'Water': 'WATER',
+      'Internet': 'INTERNET',
+    }
+
     return {
       tenancyId,
       billingMonth: `${y}-${String(m).padStart(2, '0')}-01T00:00:00Z`,
       dueDate: `${dueDate}T00:00:00Z`,
-      status: isDraft ? 'DRAFT' : undefined,
       items: charges
-        .filter((c) => c.description)
+        .filter((c) => c.description && parseFloat(c.amount) > 0)
         .map((c) => ({
-          type: c.type === 'RECURRING' ? c.description.toUpperCase().replace(/\s+/g, '_') : 'OTHER',
+          type: typeToEnum[c.description] ?? 'OTHER',
           description: c.description,
-          amount: String(parseFloat(c.amount) || 0),
+          amount: String(parseFloat(c.amount).toFixed(2)),
         })),
       _draft: isDraft,
     }

@@ -179,6 +179,10 @@ export const bills = {
     return apiFetch(`/api/bills${qs ? `?${qs}` : ''}`).then(parseResponse);
   },
 
+  // Renter: fetch only their own bills
+  mine: () =>
+    apiFetch('/api/bills/mine').then(parseResponse),
+
   get: (id) =>
     apiFetch(`/api/bills/${id}`).then(parseResponse),
 
