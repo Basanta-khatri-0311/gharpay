@@ -5,6 +5,9 @@ import LandingPage from './pages/LandingPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
+import PropertiesPage from './pages/PropertiesPage.jsx'
+import PropertyDetailPage from './pages/PropertyDetailPage.jsx'
+import TenantsPage from './pages/TenantsPage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 export default function App() {
@@ -25,6 +28,30 @@ export default function App() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/properties"
+        element={
+          <ProtectedRoute>
+            <PropertiesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/properties/:propertyId"
+        element={
+          <ProtectedRoute>
+            <PropertyDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/tenants"
+        element={
+          <ProtectedRoute>
+            <TenantsPage />
           </ProtectedRoute>
         }
       />

@@ -1,12 +1,14 @@
 import { Link, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext.jsx'
+import { payments } from '../lib/api.js'
 
-const navItems = [
+const baseNavItems = [
   { key: 'overview',    label: 'Overview',    letter: 'O' },
   { key: 'properties',  label: 'Properties',  letter: 'P' },
   { key: 'tenants',     label: 'Tenants',     letter: 'T' },
   { key: 'bills',       label: 'Bills',       letter: 'B' },
-  { key: 'payments',    label: 'Payments',    letter: 'P', badge: 2 },
+  { key: 'payments',    label: 'Payments',    letter: 'P' },
   { key: 'receipts',    label: 'Receipts',    letter: 'R' },
   { key: 'settings',    label: 'Settings',    letter: 'S' },
 ]
@@ -14,6 +16,30 @@ const navItems = [
 export default function DashboardLayout({ children, activeKey = 'overview' }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+
+  // Query pending payments count dynamically for landlord
+  const { data: pendingCount = 0 } = useQuery({
+    queryKey: ['pending-payments-count'],
+    queryFn: async () => {
+      if (user?.role !== 'LANDLORD') return 0
+      try {
+        const res = await payments.list({ status: 'PENDING' })
+        const list = Array.isArray(res) ? res : res?.payments || []
+        return list.length
+      } catch {
+        return 0
+      }
+    },
+    enabled: !!user && user.role === 'LANDLORD',
+    staleTime: 30_000,
+  })
+
+  const navItems = baseNavItems.map((item) => {
+    if (item.key === 'payments' && pendingCount > 0) {
+      return { ...item, badge: pendingCount }
+    }
+    return item
+  })
 
   const initials = user?.name
     ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()

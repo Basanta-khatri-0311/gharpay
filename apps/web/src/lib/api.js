@@ -135,6 +135,9 @@ export const units = {
   list: (propertyId) =>
     apiFetch(`/api/properties/${propertyId}/units`).then(parseResponse),
 
+  get: (propertyId, unitId) =>
+    apiFetch(`/api/properties/${propertyId}/units/${unitId}`).then(parseResponse),
+
   create: (propertyId, body) =>
     apiFetch(`/api/properties/${propertyId}/units`, { method: 'POST', body: JSON.stringify(body) }).then(parseResponse),
 
@@ -158,7 +161,7 @@ export const tenancies = {
     apiFetch(`/api/tenancies/${id}`, { method: 'PATCH', body: JSON.stringify(body) }).then(parseResponse),
 
   end: (id) =>
-    apiFetch(`/api/tenancies/${id}/end`, { method: 'POST' }).then(parseResponse),
+    apiFetch(`/api/tenancies/${id}/end`, { method: 'PATCH' }).then(parseResponse),
 };
 
 /* ─── Bills ────────────────────────────────────────────────────────────────── */
@@ -197,10 +200,10 @@ export const payments = {
     apiFetch('/api/payments', { method: 'POST', body: JSON.stringify(body) }).then(parseResponse),
 
   verify: (id) =>
-    apiFetch(`/api/payments/${id}/verify`, { method: 'POST' }).then(parseResponse),
+    apiFetch(`/api/payments/${id}/verify`, { method: 'PATCH' }).then(parseResponse),
 
   reject: (id, body) =>
-    apiFetch(`/api/payments/${id}/reject`, { method: 'POST', body: JSON.stringify(body) }).then(parseResponse),
+    apiFetch(`/api/payments/${id}/reject`, { method: 'PATCH', body: JSON.stringify(body) }).then(parseResponse),
 };
 
 /* ─── Payment Methods ──────────────────────────────────────────────────────── */
@@ -214,6 +217,15 @@ export const paymentMethods = {
 
   delete: (id) =>
     apiFetch(`/api/payment-methods/${id}`, { method: 'DELETE' }).then(parseResponse),
+
+  update: (id, body) =>
+    apiFetch(`/api/payment-methods/${id}`, { method: 'PATCH', body: JSON.stringify(body) }).then(parseResponse),
+
+  get: (id) =>
+    apiFetch(`/api/payment-methods/${id}`).then(parseResponse),
+
+  listByLandlord: (landlordId) =>
+    apiFetch(`/api/payment-methods/landlord/${landlordId}`).then(parseResponse),
 };
 
 /* ─── Invitations ──────────────────────────────────────────────────────────── */
@@ -223,5 +235,14 @@ export const invitations = {
     apiFetch('/api/invitations', { method: 'POST', body: JSON.stringify(body) }).then(parseResponse),
 
   accept: (token) =>
-    apiFetch(`/api/invitations/${token}/accept`, { method: 'POST' }).then(parseResponse),
+    apiFetch('/api/invitations/accept', { method: 'POST', body: JSON.stringify({ token }) }).then(parseResponse),
+
+  list: (params = {}) => {
+    const qs = new URLSearchParams(params).toString()
+    return apiFetch(`/api/invitations${qs ? '?' + qs : ''}`).then(parseResponse)
+  },
+
+  mine: () => apiFetch('/api/invitations/mine').then(parseResponse),
+
+  cancel: (id) => apiFetch(`/api/invitations/${id}/cancel`, { method: 'PATCH' }).then(parseResponse),
 };
