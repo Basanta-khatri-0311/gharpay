@@ -220,7 +220,7 @@ export default function TenantsPage() {
   return (
     <DashboardLayout activeKey="tenants">
 
-      <div className="flex flex-col gap-6 max-w-3xl p-4 md:p-8">
+      <div className="flex flex-col gap-6 w-full max-w-5xl mx-auto p-4 md:p-8">
         {/* Header */}
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">People</p>
@@ -346,8 +346,8 @@ export default function TenantsPage() {
                 </div>
 
                 {/* Metrics row */}
-                <div className="mx-6 mb-5 border border-border rounded-xl overflow-hidden">
-                  <div className="grid grid-cols-5 divide-x divide-border">
+                <div className="mx-6 mb-5 border border-border rounded-xl overflow-x-auto">
+                  <div className="grid grid-cols-5 divide-x divide-border min-w-[520px]">
                     <MetricCell label="Monthly rent" value={formatNPR(tenancy.unit?.monthlyRent)} />
                     <MetricCell label="Electricity" value={electricityLabel} />
                     <MetricCell label="Water" value={waterLabel} />

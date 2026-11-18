@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { auth } from '../lib/api'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const inviteToken = searchParams.get('invite') ?? ''
 
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'LANDLORD' })
   const [error, setError] = useState(null)
@@ -17,8 +19,12 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       await auth.register(form)
-      // After registering, send user to login
-      navigate('/login', { state: { registered: true } })
+      // After registering, if there's an invite token send them to accept it
+      if (inviteToken) {
+        navigate(`/accept-invite?token=${encodeURIComponent(inviteToken)}`)
+      } else {
+        navigate('/login', { state: { registered: true } })
+      }
     } catch (err) {
       setError(err.message ?? 'Something went wrong. Please try again.')
     } finally {

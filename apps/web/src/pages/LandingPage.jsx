@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
+import { useTheme } from '../context/ThemeContext.jsx'
+import { Sun, Moon } from 'lucide-react'
 
 /* ─── Navbar ─────────────────────────────────────────────────────────────── */
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { isDark, toggle: toggleTheme } = useTheme()
 
   const handleNav = (e, id) => {
     e.preventDefault()
@@ -33,22 +36,38 @@ function Navbar() {
 
         {/* Right actions — desktop */}
         <div className="hidden md:flex items-center gap-3 ml-auto">
+          <button
+            onClick={toggleTheme}
+            className="w-9 h-9 flex items-center justify-center rounded-md text-text-secondary hover:bg-surface-muted transition-colors"
+            aria-label="Toggle dark mode"
+          >
+            {isDark ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
           <Link to="/login"    className="text-[14px] font-medium text-text-secondary hover:text-text transition-colors px-3 py-2">Sign in</Link>
           <Link to="/register" className="text-[14px] font-semibold bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-primary-hover transition-colors leading-none">Get started</Link>
         </div>
 
         {/* Hamburger — mobile */}
-        <button
-          className="md:hidden p-2 rounded-md text-text-secondary hover:bg-surface transition-colors"
-          onClick={() => setMenuOpen(o => !o)}
-          aria-label="Toggle menu"
-        >
-          {menuOpen ? (
-            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
-          ) : (
-            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-          )}
-        </button>
+        <div className="md:hidden flex items-center gap-1">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-md text-text-secondary hover:bg-surface-muted transition-colors"
+            aria-label="Toggle dark mode"
+          >
+            {isDark ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
+          <button
+            className="p-2 rounded-md text-text-secondary hover:bg-surface transition-colors"
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? (
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            ) : (
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Mobile dropdown */}

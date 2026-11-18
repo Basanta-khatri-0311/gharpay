@@ -1,7 +1,13 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-export default function ProtectedRoute({ children }) {
+/**
+ * ProtectedRoute — guards a route by auth state and optionally by role.
+ * Props:
+ *   allowedRole?: 'LANDLORD' | 'RENTER'  — if set, also checks user.role
+ *   redirectTo?: string                   — where to send unauthorized users
+ */
+export default function ProtectedRoute({ children, allowedRole, redirectTo }) {
   const { user, isLoading } = useAuth();
   const location = useLocation();
 
@@ -18,6 +24,12 @@ export default function ProtectedRoute({ children }) {
 
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  // Role check: if allowedRole is specified and doesn't match, redirect
+  if (allowedRole && user.role !== allowedRole) {
+    const fallback = redirectTo ?? (user.role === 'RENTER' ? '/renter' : '/dashboard');
+    return <Navigate to={fallback} replace />;
   }
 
   return children;

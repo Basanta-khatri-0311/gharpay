@@ -9,9 +9,11 @@ import {
   ChevronRight,
   MoreHorizontal,
   Edit3,
+  Loader2,
+  Trash2,
 } from 'lucide-react'
 import DashboardLayout from '../layouts/DashboardLayout.jsx'
-import { properties } from '../lib/api.js'
+import { properties, units as unitsApi } from '../lib/api.js'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -35,9 +37,124 @@ function UnitBadge({ status }) {
   )
 }
 
+// ── Add Unit Modal ────────────────────────────────────────────────────────────
+
+function AddUnitModal({ propertyId, onClose }) {
+  const queryClient = useQueryClient()
+  const [form, setForm] = useState({ name: '', type: 'ROOM', monthlyRent: '' })
+  const [err, setErr] = useState(null)
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      unitsApi.create(propertyId, {
+        name: form.name.trim(),
+        type: form.type,
+        // API schema requires monthlyRent as a STRING decimal e.g. "18000.00"
+        monthlyRent: String(Number(form.monthlyRent).toFixed(2)),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['property-detail', propertyId] })
+      queryClient.invalidateQueries({ queryKey: ['properties'] })
+      onClose()
+    },
+    onError: (e) => setErr(e.message || 'Failed to create unit'),
+  })
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setErr(null)
+    if (!form.name.trim()) { setErr('Unit name is required'); return }
+    if (!form.monthlyRent || Number(form.monthlyRent) <= 0) {
+      setErr('Monthly rent must be greater than zero'); return
+    }
+    mutation.mutate()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-surface border border-border rounded-2xl max-w-sm w-full p-6 shadow-xl">
+        <div className="flex items-center justify-between pb-3 border-b border-border mb-4">
+          <h2 className="text-base font-bold text-text">Add Unit</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-text-muted hover:text-text hover:bg-surface-muted transition-colors">
+            <X size={17} />
+          </button>
+        </div>
+
+        {err && (
+          <div className="mb-4 flex items-center gap-2 text-xs text-danger bg-danger-bg border border-danger/20 rounded-lg px-3 py-2">
+            <AlertCircle size={14} /> {err}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-text-secondary">Unit name *</label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              placeholder="e.g. Room 01, Flat 3A, Shop C2"
+              className="w-full px-3.5 py-2 border border-border rounded-lg text-sm text-text bg-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-text-muted"
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-text-secondary">Unit type</label>
+            <select
+              value={form.type}
+              onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
+              className="w-full px-3.5 py-2 border border-border rounded-lg text-sm text-text bg-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+            >
+              <option value="ROOM">Room</option>
+              <option value="APARTMENT">Apartment</option>
+              <option value="FLAT">Flat</option>
+              <option value="SHOP">Shop / Commercial</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-text-secondary">Monthly rent (NPR) *</label>
+            <input
+              type="number"
+              value={form.monthlyRent}
+              onChange={e => setForm(f => ({ ...f, monthlyRent: e.target.value }))}
+              placeholder="e.g. 18000"
+              min="1"
+              step="1"
+              required
+              className="w-full px-3.5 py-2 border border-border rounded-lg text-sm text-text bg-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-text-muted"
+            />
+            <p className="text-xs text-text-muted">Required — must be greater than zero.</p>
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border mt-1">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-xs font-medium text-text-secondary hover:text-text hover:bg-surface-muted rounded-lg transition-colors">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={mutation.isPending}
+              className="px-5 py-2 text-xs font-semibold bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-60 flex items-center gap-1.5"
+            >
+              {mutation.isPending && <Loader2 size={12} className="animate-spin" />}
+              {mutation.isPending ? 'Adding…' : 'Add Unit'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 // ── Property Detail Panel ─────────────────────────────────────────────────────
 
-function PropertyDetail({ property, onEdit }) {
+function PropertyDetail({ property, onEdit, onDelete }) {
+  const [addUnitOpen, setAddUnitOpen] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const queryClient = useQueryClient()
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['property-detail', property.id],
     queryFn: async () => {
@@ -53,8 +170,60 @@ function PropertyDetail({ property, onEdit }) {
   const totalUnits = unitList.length || property._count?.units || 0
   const monthlyIncome = unitList.reduce((sum, u) => sum + (u.monthlyRent || 0), 0)
 
+  // Delete property mutation
+  const deleteMutation = useMutation({
+    mutationFn: () => properties.delete(property.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['properties'] })
+      onDelete()
+    },
+  })
+
+  // Toggle unit status mutation
+  const toggleUnitMutation = useMutation({
+    mutationFn: (unit) =>
+      unitsApi.update(property.id, unit.id, {
+        status: unit.status === 'VACANT' ? 'OCCUPIED' : 'VACANT',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['property-detail', property.id] })
+      queryClient.invalidateQueries({ queryKey: ['properties'] })
+    },
+  })
+
   return (
     <div className="flex flex-col h-full">
+      {addUnitOpen && (
+        <AddUnitModal propertyId={property.id} onClose={() => setAddUnitOpen(false)} />
+      )}
+
+      {/* Delete confirmation dialog */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-surface border border-border rounded-2xl max-w-sm w-full p-6 shadow-xl">
+            <h3 className="text-base font-bold text-text mb-2">Delete property?</h3>
+            <p className="text-sm text-text-muted mb-5">
+              This will permanently delete <strong>{property.name}</strong> and all its units. This cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="flex-1 py-2.5 rounded-lg text-sm font-semibold border border-border text-text hover:bg-surface-muted transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteMutation.mutate()}
+                disabled={deleteMutation.isPending}
+                className="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-danger text-white hover:bg-danger/90 transition-colors disabled:opacity-60"
+              >
+                {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Panel Header */}
       <div className="flex items-start justify-between gap-3 pb-4 border-b border-border">
         <div className="flex flex-col gap-0.5 min-w-0">
@@ -72,8 +241,12 @@ function PropertyDetail({ property, onEdit }) {
           >
             <Edit3 size={16} />
           </button>
-          <button className="p-1.5 rounded-lg text-text-muted hover:text-text hover:bg-surface-muted transition-colors">
-            <MoreHorizontal size={16} />
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"
+            title="Delete property"
+          >
+            <Trash2 size={16} />
           </button>
         </div>
       </div>
@@ -108,7 +281,12 @@ function PropertyDetail({ property, onEdit }) {
       <div className="mt-5 flex-1 flex flex-col min-h-0">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-text">Units and tenants</h3>
-          <button className="text-xs text-primary font-medium hover:underline">View all</button>
+          <button
+            onClick={() => setAddUnitOpen(true)}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:bg-primary/10 px-2.5 py-1.5 rounded-lg transition-colors border border-primary/20"
+          >
+            <Plus size={13} strokeWidth={2.5} /> Add unit
+          </button>
         </div>
 
         {error && (
@@ -125,8 +303,14 @@ function PropertyDetail({ property, onEdit }) {
             ))}
           </div>
         ) : unitList.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center text-sm text-text-muted">
-            No units found for this property.
+          <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center py-8">
+            <p className="text-sm text-text-muted">No units yet.</p>
+            <button
+              onClick={() => setAddUnitOpen(true)}
+              className="inline-flex items-center gap-1.5 bg-primary text-white px-3.5 py-2 rounded-lg text-xs font-medium hover:bg-primary-hover transition-colors"
+            >
+              <Plus size={13} strokeWidth={2.5} /> Add first unit
+            </button>
           </div>
         ) : (
           <div className="flex flex-col gap-1 overflow-y-auto">
@@ -141,11 +325,19 @@ function PropertyDetail({ property, onEdit }) {
                     <span className="text-sm text-text-secondary truncate">{unit.tenant.name}</span>
                   )}
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <span className="text-sm font-medium text-text">
                     {unit.monthlyRent ? fmtNPR(unit.monthlyRent) : '—'}
                   </span>
-                  <UnitBadge status={unit.status} />
+                  {/* Clickable status toggle */}
+                  <button
+                    onClick={() => toggleUnitMutation.mutate(unit)}
+                    disabled={toggleUnitMutation.isPending}
+                    title={unit.status === 'VACANT' ? 'Mark as Occupied' : 'Mark as Vacant'}
+                    className="focus:outline-none disabled:opacity-50"
+                  >
+                    <UnitBadge status={unit.status} />
+                  </button>
                 </div>
               </div>
             ))}
@@ -180,9 +372,17 @@ export default function PropertiesPage() {
   const propertyList = data || []
   const selectedProperty = propertyList.find((p) => p.id === selectedId) || null
 
-  // Stats derived from list (no per-unit rent here, so income shown in detail panel only)
+  // Stats derived from list (income available if backend includes units in list)
   const totalUnits = propertyList.reduce((acc, p) => acc + (p._count?.units || 0), 0)
   const occupiedTotal = propertyList.reduce((acc, p) => acc + (p._count?.occupiedUnits || 0), 0)
+  const totalMonthlyIncome = propertyList.reduce((acc, p) => {
+    // Some backends include units array in list; others don't
+    if (Array.isArray(p.units)) {
+      return acc + p.units.reduce((s, u) => s + Number(u.monthlyRent || 0), 0)
+    }
+    // Fall back to totalMonthlyRent if the backend computes it
+    return acc + Number(p.totalMonthlyRent || p.monthlyIncome || 0)
+  }, 0)
 
   // ── Mutations ─────────────────────────────────────────────────────────────
 
@@ -297,7 +497,7 @@ export default function PropertiesPage() {
             <Divider />
             <StatChip label={`${occupiedTotal} occupied`} />
             <Divider />
-            <StatChip label="NPR — expected/monthly" muted />
+            <StatChip label={totalMonthlyIncome > 0 ? `${fmtNPR(totalMonthlyIncome)} expected/monthly` : "NPR — expected/monthly"} muted />
           </div>
         )}
 
@@ -400,6 +600,7 @@ export default function PropertiesPage() {
                 key={selectedProperty.id}
                 property={selectedProperty}
                 onEdit={openEditModal}
+                onDelete={() => setSelectedId(null)}
               />
             )}
           </div>

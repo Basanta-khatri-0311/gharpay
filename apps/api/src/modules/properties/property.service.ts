@@ -76,6 +76,22 @@ export async function getProperty(
   return property;
 }
 
+export async function deleteProperty(
+  landlordId: string,
+  propertyId: string,
+) {
+  const result = await prisma.property.deleteMany({
+    where: {
+      id: propertyId,
+      landlordId,
+    },
+  });
+
+  if (result.count === 0) {
+    throw new NotFoundError('Property not found');
+  }
+}
+
 export async function updateProperty(
   landlordId: string,
   propertyId: string,

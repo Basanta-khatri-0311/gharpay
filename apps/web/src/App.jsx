@@ -12,11 +12,16 @@ import BillsPage from './pages/BillsPage.jsx'
 import PaymentsPage from './pages/PaymentsPage.jsx'
 import ReceiptsPage from './pages/ReceiptsPage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
+// Renter pages
+import RenterDashboard from './pages/renter/RenterDashboard.jsx'
+import RenterPaymentHistory from './pages/renter/RenterPaymentHistory.jsx'
+import RenterReceipt from './pages/renter/RenterReceipt.jsx'
+import RenterProfile from './pages/renter/RenterProfile.jsx'
+import AcceptInvitePage from './pages/AcceptInvitePage.jsx'
 
 export default function App() {
   const { isLoading } = useAuth()
 
-  // Show full-screen loader until we know the auth state
   if (isLoading) return <LoadingScreen />
 
   return (
@@ -25,80 +30,64 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Protected routes — require authentication */}
+      {/* ── LANDLORD routes ─────────────────────────────── */}
       <Route
         path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        }
+        element={<ProtectedRoute allowedRole="LANDLORD"><DashboardPage /></ProtectedRoute>}
       />
       <Route
         path="/dashboard/properties"
-        element={
-          <ProtectedRoute>
-            <PropertiesPage />
-          </ProtectedRoute>
-        }
+        element={<ProtectedRoute allowedRole="LANDLORD"><PropertiesPage /></ProtectedRoute>}
       />
       <Route
         path="/dashboard/properties/:propertyId"
-        element={
-          <ProtectedRoute>
-            <PropertyDetailPage />
-          </ProtectedRoute>
-        }
+        element={<ProtectedRoute allowedRole="LANDLORD"><PropertyDetailPage /></ProtectedRoute>}
       />
       <Route
         path="/dashboard/tenants"
-        element={
-          <ProtectedRoute>
-            <TenantsPage />
-          </ProtectedRoute>
-        }
+        element={<ProtectedRoute allowedRole="LANDLORD"><TenantsPage /></ProtectedRoute>}
       />
-
       <Route
         path="/dashboard/bills"
-        element={
-          <ProtectedRoute>
-            <BillsPage />
-          </ProtectedRoute>
-        }
+        element={<ProtectedRoute allowedRole="LANDLORD"><BillsPage /></ProtectedRoute>}
       />
       <Route
         path="/dashboard/payments"
-        element={
-          <ProtectedRoute>
-            <PaymentsPage />
-          </ProtectedRoute>
-        }
+        element={<ProtectedRoute allowedRole="LANDLORD"><PaymentsPage /></ProtectedRoute>}
       />
       <Route
         path="/dashboard/payments/:paymentId"
-        element={
-          <ProtectedRoute>
-            <PaymentsPage />
-          </ProtectedRoute>
-        }
+        element={<ProtectedRoute allowedRole="LANDLORD"><PaymentsPage /></ProtectedRoute>}
       />
       <Route
         path="/dashboard/receipts"
-        element={
-          <ProtectedRoute>
-            <ReceiptsPage />
-          </ProtectedRoute>
-        }
+        element={<ProtectedRoute allowedRole="LANDLORD"><ReceiptsPage /></ProtectedRoute>}
       />
       <Route
         path="/dashboard/receipts/:receiptId"
-        element={
-          <ProtectedRoute>
-            <ReceiptsPage />
-          </ProtectedRoute>
-        }
+        element={<ProtectedRoute allowedRole="LANDLORD"><ReceiptsPage /></ProtectedRoute>}
       />
+
+      {/* ── RENTER routes ────────────────────────────────── */}
+      <Route
+        path="/renter"
+        element={<ProtectedRoute allowedRole="RENTER"><RenterDashboard /></ProtectedRoute>}
+      />
+      <Route
+        path="/renter/payments"
+        element={<ProtectedRoute allowedRole="RENTER"><RenterPaymentHistory /></ProtectedRoute>}
+      />
+      <Route
+        path="/renter/receipts/:paymentId"
+        element={<ProtectedRoute allowedRole="RENTER"><RenterReceipt /></ProtectedRoute>}
+      />
+      <Route
+        path="/renter/profile"
+        element={<ProtectedRoute allowedRole="RENTER"><RenterProfile /></ProtectedRoute>}
+      />
+
+      {/* ── Invitation acceptance (public) ───────────────── */}
+      <Route path="/accept-invite" element={<AcceptInvitePage />} />
 
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />

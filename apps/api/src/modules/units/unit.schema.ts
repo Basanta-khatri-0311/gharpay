@@ -37,6 +37,7 @@ export const updateUnitSchema = z
         message: 'Monthly rent must be greater than zero',
       })
       .optional(),
+    status: z.enum(['VACANT', 'OCCUPIED']).optional(),
   })
   .refine(
     (data) => Object.values(data).some((value) => value !== undefined),

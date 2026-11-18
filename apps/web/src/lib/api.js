@@ -127,6 +127,9 @@ export const properties = {
 
   update: (id, body) =>
     apiFetch(`/api/properties/${id}`, { method: 'PATCH', body: JSON.stringify(body) }).then(parseResponse),
+
+  delete: (id) =>
+    apiFetch(`/api/properties/${id}`, { method: 'DELETE' }).then(parseResponse),
 };
 
 /* ─── Units ────────────────────────────────────────────────────────────────── */

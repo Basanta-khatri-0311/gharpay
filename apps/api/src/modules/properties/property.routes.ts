@@ -11,6 +11,7 @@ import {
   listProperties,
   getProperty,
   updateProperty,
+  deleteProperty,
 } from './property.service.js';
 
 const router = Router();
@@ -79,5 +80,15 @@ router.patch(
     }
   },
 );
+
+
+router.delete('/:propertyId', async (req, res, next) => {
+  try {
+    await deleteProperty(req.user!.id, req.params.propertyId as string);
+    res.status(200).json({ success: true, data: null });
+  } catch (error) {
+    next(error);
+  }
+});
 
 export default router;

@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useTheme } from '../context/ThemeContext.jsx'
 import { payments } from '../lib/api.js'
-import { X, Menu } from 'lucide-react'
+import { X, Menu, Sun, Moon } from 'lucide-react'
 
 const baseNavItems = [
   { key: 'overview',    label: 'Overview',    letter: 'O' },
@@ -61,6 +62,7 @@ export default function DashboardLayout({ children, activeKey = 'overview' }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { isDark, toggle: toggleTheme } = useTheme()
 
   const { data: pendingCount = 0 } = useQuery({
     queryKey: ['pending-payments-count'],
@@ -97,7 +99,7 @@ export default function DashboardLayout({ children, activeKey = 'overview' }) {
   return (
     <div className="flex h-screen overflow-hidden bg-bg">
       {/* ── Desktop sidebar ───────────────────────────────── */}
-      <aside className="hidden md:flex w-[168px] shrink-0 bg-bg-dark flex-col py-5 overflow-y-auto">
+      <aside className="hidden md:flex w-[168px] shrink-0 bg-bg-dark flex-col py-5 overflow-y-auto border-r border-white/[0.04]">
         <SidebarContent navItems={navItems} activeKey={activeKey} user={user} handleLogout={handleLogout} />
       </aside>
 
@@ -145,6 +147,14 @@ export default function DashboardLayout({ children, activeKey = 'overview' }) {
           </div>
 
           <div className="flex items-center gap-2 md:gap-3 ml-auto">
+            {/* Dark mode toggle */}
+            <button
+              onClick={toggleTheme}
+              className="w-[34px] h-[34px] flex items-center justify-center rounded-md text-text-secondary hover:bg-surface transition-colors"
+              aria-label="Toggle dark mode"
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
             <button className="w-[34px] h-[34px] flex items-center justify-center rounded-md text-text-secondary hover:bg-surface transition-colors">
               <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>

@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
+  const inviteToken = searchParams.get('invite') ?? ''
   const from = location.state?.from?.pathname ?? '/dashboard'
   const justRegistered = location.state?.registered === true
 
@@ -20,8 +22,16 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
     try {
-      await login(form)
-      navigate(from, { replace: true })
+      const data = await login(form)
+      const role = data?.user?.role ?? data?.role
+      // If there's an invite token, go to accept-invite after login
+      if (inviteToken) {
+        navigate(`/accept-invite?token=${encodeURIComponent(inviteToken)}`)
+      } else if (from && from !== '/dashboard' && from !== '/renter') {
+        navigate(from, { replace: true })
+      } else {
+        navigate(role === 'RENTER' ? '/renter' : '/dashboard', { replace: true })
+      }
     } catch (err) {
       setError(err.message ?? 'Something went wrong. Please try again.')
     } finally {
