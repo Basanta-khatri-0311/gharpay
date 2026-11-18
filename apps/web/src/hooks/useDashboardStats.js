@@ -63,6 +63,15 @@ function computeStats(propertiesList, billsList, paymentsList) {
   // --- Pending payments ---
   const pendingPayments = paymentsList.filter(p => p.status === 'PENDING');
 
+  // --- Recent payments (last 5 by submittedAt desc) ---
+  const recentPayments = [...paymentsList]
+    .sort((a, b) => {
+      const ta = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
+      const tb = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
+      return tb - ta;
+    })
+    .slice(0, 5);
+
   // --- Collection trend: last 6 months of PAID bills ---
   const last6 = getLast6Months();
   const trendMap = {};
@@ -93,6 +102,7 @@ function computeStats(propertiesList, billsList, paymentsList) {
       occupiedCount,
     },
     pendingPayments,
+    recentPayments,
     overdueBills,
     collectionTrend,
   };
@@ -112,6 +122,7 @@ export function useDashboardStats() {
       occupiedCount: 0,
     },
     pendingPayments: [],
+    recentPayments: [],
     overdueBills: [],
     collectionTrend: getLast6Months().map(m => ({ month: m.label, amount: 0 })),
   });

@@ -233,11 +233,125 @@ function NeedsAttention({ pendingPayments, overdueBills, isLoading }) {
   )
 }
 
+/* ─── Payment Activity ────────────────────────────────────────────────────── */
+
+function formatBillingMonth(billingMonth) {
+  if (!billingMonth) return '—'
+  // billingMonth may be an ISO date string like "2024-10-01" or just a label
+  const d = new Date(billingMonth)
+  if (isNaN(d.getTime())) return billingMonth
+  return d.toLocaleDateString('en-US', { month: 'long' }) + ' rent'
+}
+
+function formatPaymentDate(dateStr) {
+  if (!dateStr) return '—'
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return '—'
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+const STATUS_MAP = {
+  VERIFIED: { label: 'Paid', className: 'bg-success-bg text-success' },
+  PENDING:  { label: 'Pending', className: 'bg-warning-bg text-warning' },
+  REJECTED: { label: 'Rejected', className: 'bg-danger-bg text-danger' },
+}
+
+function PaymentActivity({ recentPayments, isLoading }) {
+  return (
+    <div className="bg-surface border border-border rounded-2xl overflow-hidden">
+      {/* Header */}
+      <div className="flex items-start justify-between px-6 pt-5 pb-4">
+        <div>
+          <p className="text-sm font-semibold">Payment activity</p>
+          <p className="text-xs text-text-muted mt-0.5">Recent rent and utility payment updates</p>
+        </div>
+        <Link
+          to="/dashboard/payments"
+          className="text-xs text-accent font-medium hover:underline whitespace-nowrap flex items-center gap-1 mt-0.5"
+        >
+          View all →
+        </Link>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-surface-muted">
+              {['Tenant', 'Property', 'Bill', 'Amount', 'Status', 'Date', ''].map((col) => (
+                <th
+                  key={col}
+                  className="text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted px-5 py-3 first:pl-6 last:pr-6"
+                >
+                  {col}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading ? (
+              [0, 1, 2].map((i) => (
+                <tr key={i} className="border-t border-border animate-pulse">
+                  {[0, 1, 2, 3, 4, 5, 6].map((j) => (
+                    <td key={j} className="px-5 py-4 first:pl-6 last:pr-6">
+                      <div className="h-3 rounded bg-border w-24" />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : recentPayments.length === 0 ? (
+              <tr className="border-t border-border">
+                <td colSpan={7} className="px-6 py-10 text-center text-sm text-text-muted">
+                  No payment activity yet
+                </td>
+              </tr>
+            ) : (
+              recentPayments.map((pmt) => {
+                const tenantName  = pmt.bill?.tenancy?.renter?.name ?? '—'
+                const propName    = pmt.bill?.tenancy?.unit?.property?.name ?? ''
+                const unitName    = pmt.bill?.tenancy?.unit?.name ?? ''
+                const property    = propName && unitName ? `${propName} · ${unitName}` : propName || unitName || '—'
+                const bill        = formatBillingMonth(pmt.bill?.billingMonth)
+                const amount      = formatNPR(pmt.amount)
+                const statusInfo  = STATUS_MAP[pmt.status] ?? { label: pmt.status, className: 'bg-border text-text-muted' }
+                const date        = formatPaymentDate(pmt.submittedAt || pmt.bill?.dueDate)
+
+                return (
+                  <tr key={pmt.id} className="border-t border-border hover:bg-surface-muted/40 transition-colors">
+                    <td className="px-5 py-3.5 pl-6 font-medium text-text">{tenantName}</td>
+                    <td className="px-5 py-3.5 text-text-secondary">{property}</td>
+                    <td className="px-5 py-3.5 text-text-secondary">{bill}</td>
+                    <td className="px-5 py-3.5 font-medium text-text">{amount}</td>
+                    <td className="px-5 py-3.5">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${statusInfo.className}`}>
+                        {statusInfo.label}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-text-muted">{date}</td>
+                    <td className="px-5 py-3.5 pr-6">
+                      <button
+                        className="text-text-muted hover:text-text transition-colors px-1 rounded"
+                        aria-label="More options"
+                      >
+                        ···
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 /* ─── Page ────────────────────────────────────────────────────────────────── */
 
 export default function DashboardPage() {
   const { user } = useAuth()
-  const { isLoading, error, stats, pendingPayments, overdueBills, collectionTrend } = useDashboardStats()
+  const { isLoading, error, stats, pendingPayments, overdueBills, collectionTrend, recentPayments } = useDashboardStats()
 
   return (
     <DashboardLayout activeKey="overview">
@@ -263,13 +377,13 @@ export default function DashboardPage() {
               Here's how your properties are doing this month.
             </p>
           </div>
-          <button
-            disabled
-            className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-primary-hover transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          <Link
+            to="/dashboard/bills"
+            className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-primary-hover transition-colors"
           >
             <Plus size={14} strokeWidth={2.5} />
             Create bill
-          </button>
+          </Link>
         </div>
 
         {/* Stat cards */}
@@ -289,6 +403,9 @@ export default function DashboardPage() {
             isLoading={isLoading}
           />
         </div>
+
+        {/* Payment activity */}
+        <PaymentActivity recentPayments={recentPayments} isLoading={isLoading} />
 
       </div>
     </DashboardLayout>

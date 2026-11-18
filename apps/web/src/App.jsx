@@ -8,6 +8,9 @@ import DashboardPage from './pages/DashboardPage.jsx'
 import PropertiesPage from './pages/PropertiesPage.jsx'
 import PropertyDetailPage from './pages/PropertyDetailPage.jsx'
 import TenantsPage from './pages/TenantsPage.jsx'
+import BillsPage from './pages/BillsPage.jsx'
+import PaymentsPage from './pages/PaymentsPage.jsx'
+import ReceiptsPage from './pages/ReceiptsPage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 export default function App() {
@@ -52,6 +55,47 @@ export default function App() {
         element={
           <ProtectedRoute>
             <TenantsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/dashboard/bills"
+        element={
+          <ProtectedRoute>
+            <BillsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/payments"
+        element={
+          <ProtectedRoute>
+            <PaymentsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/payments/:paymentId"
+        element={
+          <ProtectedRoute>
+            <PaymentsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/receipts"
+        element={
+          <ProtectedRoute>
+            <ReceiptsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/receipts/:receiptId"
+        element={
+          <ProtectedRoute>
+            <ReceiptsPage />
           </ProtectedRoute>
         }
       />
